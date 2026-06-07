@@ -85,6 +85,20 @@ export const StudyTimer = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timerMode]);
 
+  // Handle custom DevTools time adjustment event
+  useEffect(() => {
+    const handleAdjust = (e) => {
+      const amount = e.detail; // seconds
+      if (timerMode === "stopwatch") {
+        setElapsedSeconds(prev => Math.max(0, prev + amount));
+      } else {
+        setSecondsLeft(prev => Math.max(0, prev + amount));
+      }
+    };
+    window.addEventListener("adjust-timer-time", handleAdjust);
+    return () => window.removeEventListener("adjust-timer-time", handleAdjust);
+  }, [timerMode]);
+
   // Handle device orientation for real flipping (Face down detection)
   useEffect(() => {
     const handleOrientation = (event) => {
@@ -412,14 +426,17 @@ export const StudyTimer = ({
           justifyContent: "center",
           background: "var(--surface-color)"
         }}>
-          <svg style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            transform: "rotate(-90deg)"
-          }}>
+          <svg 
+            viewBox="0 0 220 220"
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              transform: "rotate(-90deg)"
+            }}
+          >
             <circle
               cx="110"
               cy="110"
@@ -436,10 +453,12 @@ export const StudyTimer = ({
                 stroke={isResting ? "var(--secondary-color)" : "var(--primary-color)"}
                 strokeWidth="5"
                 fill="transparent"
-                strokeDasharray={circumference}
-                strokeDashoffset={strokeDashoffset}
                 strokeLinecap="round"
-                style={{ transition: "stroke-dashoffset 1s linear" }}
+                style={{ 
+                  strokeDasharray: circumference,
+                  strokeDashoffset: strokeDashoffset,
+                  transition: "stroke-dashoffset 1s linear" 
+                }}
               />
             )}
           </svg>
@@ -447,7 +466,12 @@ export const StudyTimer = ({
           <div
             className="timer-digits"
             onClick={() => !isActive && setShowTimeEditModal(true)}
-            style={{ position: "relative", zIndex: 10, cursor: !isActive ? "pointer" : "default" }}
+            style={{ 
+              position: "relative", 
+              zIndex: 10, 
+              cursor: !isActive ? "pointer" : "default",
+              fontSize: getDisplayTime().length > 5 ? "32px" : "44px"
+            }}
           >
             {getDisplayTime()}
           </div>

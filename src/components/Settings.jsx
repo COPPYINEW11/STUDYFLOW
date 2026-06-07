@@ -55,6 +55,7 @@ export const Settings = ({
   };
 
   const adjustTimerTime = (amountInMinutes) => {
+    window.dispatchEvent(new CustomEvent("adjust-timer-time", { detail: amountInMinutes * 60 }));
     alert(`개발자 도구: 타이머 시간이 ${amountInMinutes}분 조정되었습니다.`);
   };
 

@@ -204,6 +204,7 @@ function App() {
   const [activeSubject, setActiveSubject] = useState("자율학습");
   const [timerMode, setTimerMode] = useState("pomodoro"); // pomodoro | timer | stopwatch
   const [showAiFabInput, setShowAiFabInput] = useState(false);
+  const [showDevTools, setShowDevTools] = useState(false);
   const [aiFabText, setAiFabText] = useState("");
 
   // Safe fallback translation object
@@ -398,6 +399,76 @@ function App() {
     alert(`AI 등록 성공: ${parsedDay.toUpperCase()} ${parsedHour}시 ${parsedSubject} (${parsedDuration}시간) ${parsedLocation ? `장소: ${parsedLocation}` : ""}`);
   };
 
+  // DevTools Cheat Handlers
+  const handleCheatAdjustTimer = (seconds) => {
+    window.dispatchEvent(new CustomEvent("adjust-timer-time", { detail: seconds }));
+  };
+
+  const handleCheatAddExp = (amount) => {
+    addExperience(amount);
+  };
+
+  const handleCheatResetLevel = () => {
+    setLevel(1);
+    setExp(0);
+    alert("레벨과 경험치가 Lv.1 (0 EXP)로 초기화되었습니다.");
+  };
+
+  const handleCheatResetStudyTime = () => {
+    setStats(prev => ({
+      ...prev,
+      totalStudyMinutes: 0,
+      longestSessionMinutes: 0
+    }));
+    setStudyMinutesBySubject({
+      "수학": 0,
+      "영어": 0,
+      "국어": 0,
+      "과학": 0,
+      "사회": 0,
+      "역사": 0,
+      "기타": 0
+    });
+    setRestMinutesByType({
+      "식사": 0,
+      "휴식": 0,
+      "수면": 0,
+      "기타": 0
+    });
+    alert("과목별 공부시간 및 통계가 초기화되었습니다.");
+  };
+
+  const handleCheatResetAll = () => {
+    if (window.confirm("정말 모든 데이터를 공장 초기화하시겠습니까? (시간표 스케줄 포함)")) {
+      setSchedule([]);
+      setLevel(1);
+      setExp(0);
+      setStats({
+        totalStudyMinutes: 0,
+        longestSessionMinutes: 0,
+        joinedGroup: false,
+        createdGroup: false,
+        completedGroupGoals: 0
+      });
+      setStudyMinutesBySubject({
+        "수학": 0,
+        "영어": 0,
+        "국어": 0,
+        "과학": 0,
+        "사회": 0,
+        "역사": 0,
+        "기타": 0
+      });
+      setRestMinutesByType({
+        "식사": 0,
+        "휴식": 0,
+        "수면": 0,
+        "기타": 0
+      });
+      alert("모든 데이터가 완벽히 초기화되었습니다.");
+    }
+  };
+
   if (authLoading) {
     return (
       <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
@@ -420,28 +491,41 @@ function App() {
   return (
     <div className="app-container">
       {/* Top Banner Header (Stitch design layout: Lv.1 김주환 experience bar, notification bell) */}
-      <header className="bg-surface/80 backdrop-blur-md fixed top-0 left-0 right-0 z-50 flex justify-between items-center w-full px-4 py-3 border-b border-outline-variant">
-        <div className="flex items-center gap-2 hover:opacity-80 cursor-pointer">
-          <div className="flex flex-col gap-0.5" style={{ display: "flex", flexDirection: "column" }}>
-            <div className="flex items-center gap-2" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+      <header className="app-header" style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        height: "64px",
+        zIndex: 150,
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        padding: "0 16px",
+        backgroundColor: "var(--surface-color)",
+        borderBottom: "1px solid var(--border-color)"
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }} onClick={() => alert("프로필 메뉴 준비 중")}>
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               {user?.photoURL ? (
                 <span style={{ fontSize: "24px", display: "inline-flex", alignItems: "center", justifyContent: "center", width: "32px", height: "32px" }}>{user.photoURL}</span>
               ) : (
-                <span className="material-symbols-outlined text-[32px] text-on-surface-variant">person</span>
+                <span className="material-symbols-outlined" style={{ fontSize: "32px", color: "var(--text-disabled)" }}>person</span>
               )}
-              <span className="text-headline-sm font-bold" style={{ fontSize: "15px", fontWeight: "700" }}>
+              <span style={{ fontSize: "15px", fontWeight: "700", color: "var(--text-primary)" }}>
                 Lv.{level} {user?.displayName || "게스트"}
               </span>
             </div>
             {/* Experience bar track */}
-            <div className="ml-[32px] h-1.5 w-24 bg-surface-container-highest rounded-full overflow-hidden" style={{ marginLeft: "32px", height: "6px", width: "96px", backgroundColor: "var(--surface-container-high)", borderRadius: "9999px", overflow: "hidden" }}>
-              <div className="h-full bg-primary" style={{ height: "100%", width: `${Math.min(100, Math.floor((exp / 1000) * 100))}%`, backgroundColor: "var(--primary-color)" }}></div>
+            <div style={{ marginLeft: "32px", height: "6px", width: "96px", backgroundColor: "var(--surface-container-high)", borderRadius: "9999px", overflow: "hidden", marginTop: "2px" }}>
+              <div style={{ height: "100%", width: `${Math.min(100, Math.floor((exp / 1000) * 100))}%`, backgroundColor: "var(--primary-color)" }}></div>
             </div>
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <span style={{ fontSize: "16px", fontWeight: "800", color: "var(--primary-color)", marginRight: "8px" }}>FCAID</span>
-          <button className="hover:opacity-80 p-2 rounded-full flex items-center justify-center text-on-surface-variant" style={{ background: "none", border: "none", color: "var(--text-secondary)", cursor: "pointer" }} onClick={() => alert("현재 알림이 없습니다.")}>
+          <button style={{ background: "none", border: "none", color: "var(--text-secondary)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: "8px" }} onClick={() => alert("현재 알림이 없습니다.")}>
             <span className="material-symbols-outlined">notifications</span>
           </button>
         </div>
@@ -574,6 +658,168 @@ function App() {
               />
               <button className="btn btn-primary" style={{ width: "auto", padding: "10px" }} onClick={handleAiFabSubmit}>
                 <span className="material-symbols-outlined">send</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DevTools Floating Button */}
+      <div
+        className="cursor-pointer"
+        style={{
+          position: "absolute",
+          bottom: activeTab !== "timer" ? "152px" : "88px",
+          right: "16px",
+          zIndex: 99,
+          width: "56px",
+          height: "56px",
+          borderRadius: "50%",
+          background: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "#e2e8f0",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+          border: "1.5px solid rgba(78, 205, 196, 0.4)",
+          transition: "bottom 0.3s ease"
+        }}
+        onClick={() => setShowDevTools(!showDevTools)}
+      >
+        <span className="material-symbols-outlined" style={{ fontSize: "24px" }}>build</span>
+      </div>
+
+      {/* DevTools Panel (Non-blocking Floating Card) */}
+      {showDevTools && (
+        <div style={{
+          position: "absolute",
+          bottom: activeTab !== "timer" ? "216px" : "152px",
+          right: "16px",
+          width: "280px",
+          maxHeight: "360px",
+          overflowY: "auto",
+          backgroundColor: "rgba(17, 24, 39, 0.96)",
+          backdropFilter: "blur(12px)",
+          border: "1.5px solid rgba(78, 205, 196, 0.4)",
+          borderRadius: "16px",
+          padding: "16px",
+          zIndex: 199,
+          color: "#f3f4f6",
+          boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5)",
+          display: "flex",
+          flexDirection: "column",
+          gap: "12px",
+          scrollbarWidth: "none",
+          transition: "bottom 0.3s ease"
+        }}>
+          {/* Header */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "8px" }}>
+            <span style={{ fontSize: "12px", fontWeight: "700", display: "flex", alignItems: "center", gap: "6px", color: "#4ecdc4" }}>
+              <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>build</span>
+              🛠️ 개발자 도구 (Cheat Panel)
+            </span>
+            <span className="material-symbols-outlined" onClick={() => setShowDevTools(false)} style={{ cursor: "pointer", color: "#9ca3af", fontSize: "18px" }}>close</span>
+          </div>
+
+          {/* Quick Status */}
+          <div style={{
+            backgroundColor: "rgba(255,255,255,0.04)",
+            borderRadius: "8px",
+            padding: "8px",
+            fontSize: "11px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "4px",
+            border: "1px solid rgba(255,255,255,0.06)"
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span style={{ color: "#9ca3af" }}>레벨 / 경험치</span>
+              <span style={{ fontWeight: "700", color: "#ffffff" }}>Lv.{level} ({exp}/1000 EXP)</span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span style={{ color: "#9ca3af" }}>누적 공부 시간</span>
+              <span style={{ fontWeight: "700", color: "#ffffff" }}>{Math.floor(stats.totalStudyMinutes / 60)}시간 {stats.totalStudyMinutes % 60}분</span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span style={{ color: "#9ca3af" }}>그룹 참여 현황</span>
+              <span style={{ fontWeight: "700", color: stats.joinedGroup ? "#10b981" : "#ef4444" }}>
+                {stats.joinedGroup ? "참가 중" : "미참가"}
+              </span>
+            </div>
+          </div>
+
+          {/* Controls */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {/* Timer Cheats */}
+            <div>
+              <span style={{ fontSize: "9px", fontWeight: "700", color: "#9ca3af", letterSpacing: "0.5px", textTransform: "uppercase", display: "block", marginBottom: "4px" }}>
+                타이머 시간 조작
+              </span>
+              <div style={{ display: "flex", gap: "6px" }}>
+                <button className="btn btn-secondary" style={{ backgroundColor: "#1f2937", color: "#ffffff", borderColor: "rgba(255,255,255,0.08)", padding: "6px", fontSize: "11px" }} onClick={() => handleCheatAdjustTimer(300)}>
+                  +5분
+                </button>
+                <button className="btn btn-secondary" style={{ backgroundColor: "#1f2937", color: "#ffffff", borderColor: "rgba(255,255,255,0.08)", padding: "6px", fontSize: "11px" }} onClick={() => handleCheatAdjustTimer(-300)}>
+                  -5분
+                </button>
+              </div>
+            </div>
+
+            {/* EXP Cheats */}
+            <div>
+              <span style={{ fontSize: "9px", fontWeight: "700", color: "#9ca3af", letterSpacing: "0.5px", textTransform: "uppercase", display: "block", marginBottom: "4px" }}>
+                경험치 및 레벨 조작
+              </span>
+              <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                <button className="btn btn-secondary" style={{ backgroundColor: "#1f2937", color: "#ffffff", borderColor: "rgba(255,255,255,0.08)", padding: "6px", fontSize: "11px", flex: "1 1 45%" }} onClick={() => handleCheatAddExp(50)}>
+                  +50 EXP
+                </button>
+                <button className="btn btn-secondary" style={{ backgroundColor: "#1f2937", color: "#ffffff", borderColor: "rgba(255,255,255,0.08)", padding: "6px", fontSize: "11px", flex: "1 1 45%" }} onClick={() => handleCheatAddExp(200)}>
+                  +200 EXP
+                </button>
+                <button className="btn btn-secondary" style={{ backgroundColor: "#1f2937", color: "#ffffff", borderColor: "rgba(255,255,255,0.08)", padding: "6px", fontSize: "11px", flex: "1 1 45%" }} onClick={() => setLevel(prev => prev + 1)}>
+                  레벨 +1
+                </button>
+                <button className="btn btn-secondary" style={{ backgroundColor: "#1f2937", color: "#ffffff", borderColor: "rgba(255,255,255,0.08)", padding: "6px", fontSize: "11px", flex: "1 1 45%" }} onClick={() => setLevel(prev => Math.max(1, prev - 1))}>
+                  레벨 -1
+                </button>
+              </div>
+            </div>
+
+            {/* Group Cheats */}
+            <div>
+              <span style={{ fontSize: "9px", fontWeight: "700", color: "#9ca3af", letterSpacing: "0.5px", textTransform: "uppercase", display: "block", marginBottom: "4px" }}>
+                그룹 및 데이터 조작
+              </span>
+              <div style={{ display: "flex", gap: "6px" }}>
+                <button className="btn btn-secondary" style={{ backgroundColor: "#1f2937", color: "#ffffff", borderColor: "rgba(255,255,255,0.08)", padding: "6px", fontSize: "11px" }} onClick={() => {
+                  setStats(prev => ({
+                    ...prev,
+                    joinedGroup: !prev.joinedGroup,
+                    createdGroup: !prev.joinedGroup ? true : false
+                  }));
+                  alert(`그룹 상태가 ${!stats.joinedGroup ? "참가" : "탈퇴"}로 조작되었습니다.`);
+                }}>
+                  그룹 {stats.joinedGroup ? "탈퇴" : "참가"} 토글
+                </button>
+                <button className="btn btn-secondary" style={{ backgroundColor: "#1f2937", color: "#ffffff", borderColor: "rgba(255,255,255,0.08)", padding: "6px", fontSize: "11px" }} onClick={() => {
+                  setSettings(prev => ({ ...prev, darkMode: !prev.darkMode }));
+                }}>
+                  다크모드 토글
+                </button>
+              </div>
+            </div>
+
+            {/* Reset Actions */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px", borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "8px", marginTop: "2px" }}>
+              <button className="btn" style={{ backgroundColor: "#374151", color: "#ffffff", padding: "8px", fontSize: "11px" }} onClick={handleCheatResetLevel}>
+                레벨 및 경험치 초기화
+              </button>
+              <button className="btn" style={{ backgroundColor: "#991b1b", color: "#ffffff", padding: "8px", fontSize: "11px" }} onClick={handleCheatResetStudyTime}>
+                공부시간 및 통계 초기화
+              </button>
+              <button className="btn" style={{ backgroundColor: "#7f1d1d", color: "#fca5a5", padding: "8px", fontSize: "11px", fontWeight: "800" }} onClick={handleCheatResetAll}>
+                ⚠️ 공장 전체 초기화
               </button>
             </div>
           </div>
