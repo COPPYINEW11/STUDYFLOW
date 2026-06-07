@@ -36,12 +36,20 @@ export const Group = ({
   };
 
   const mockGroupMembers = [
-    { name: "이도영 (나)", hours: Math.floor(safeStats.totalStudyMinutes / 60) + "h " + (safeStats.totalStudyMinutes % 60) + "m", progress: Math.min(100, Math.floor((safeStats.totalStudyMinutes / 120) * 100)), active: true },
-    { name: "김지민", hours: "3h 40m", progress: 100, active: false },
-    { name: "박성준", hours: "1h 15m", progress: 60, active: true },
-    { name: "최수아", hours: "0h 45m", progress: 35, active: false },
-    { name: "정민우", hours: "2h 10m", progress: 85, active: true }
+    { name: "이도영 (나)", level: safeStats ? (Math.floor(safeStats.totalStudyMinutes / 60) + 1) : 1, hours: Math.floor(safeStats.totalStudyMinutes / 60) + "h " + (safeStats.totalStudyMinutes % 60) + "m", progress: Math.min(100, Math.floor((safeStats.totalStudyMinutes / 120) * 100)), active: true, avatar: "🧑‍💻", isMe: true },
+    { name: "김지민", level: 8, hours: "3h 40m", progress: 100, active: false, avatar: "👧", isMe: false },
+    { name: "박성준", level: 5, hours: "1h 15m", progress: 60, active: true, avatar: "👦", isMe: false },
+    { name: "최수아", level: 12, hours: "0h 45m", progress: 35, active: false, avatar: "🧑‍🎓", isMe: false },
+    { name: "정민우", level: 3, hours: "2h 10m", progress: 85, active: true, avatar: "🧑", isMe: false }
   ];
+
+  const getLevelBadgeColor = (lv) => {
+    if (lv >= 30) return "#42A5F5";
+    if (lv >= 20) return "#26A69A";
+    if (lv >= 10) return "#FFCA28";
+    if (lv >= 5)  return "#90A4AE";
+    return "#A1887F";
+  };
 
   const handleCreateGroupSubmit = () => {
     if (!groupName.trim()) {
@@ -179,34 +187,68 @@ export const Group = ({
           <h3 style={{ fontSize: "14px", fontWeight: "700", marginBottom: "12px" }}>멤버 실시간 공부 현황 (과목: {groupSubject})</h3>
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {mockGroupMembers.map(member => (
-              <div key={member.name} className="group-member-card">
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: "13px", fontWeight: "700" }}>{member.name}</span>
-                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                    <span style={{
-                      width: "6px",
-                      height: "6px",
-                      borderRadius: "50%",
-                      backgroundColor: member.active ? "var(--secondary-color)" : "var(--text-disabled)"
-                    }} />
-                    <span style={{ fontSize: "11px", color: "var(--text-secondary)" }}>
-                      {member.active ? "공부 중" : "자리 비움"}
-                    </span>
+              <div key={member.name} className="group-member-card" style={{
+                border: member.isMe ? "1.5px solid var(--primary-color)" : "1px solid var(--border-color)",
+                borderRadius: "16px",
+                padding: "12px 14px",
+                background: member.isMe ? "linear-gradient(135deg, rgba(36,56,156,0.04) 0%, rgba(0,107,92,0.04) 100%)" : "var(--surface-color)"
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  {/* Avatar */}
+                  <div style={{
+                    width: "38px", height: "38px", borderRadius: "50%",
+                    background: member.active ? "linear-gradient(135deg, var(--primary-color), var(--secondary-color))" : "var(--surface-container-high)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: "18px", flexShrink: 0,
+                    boxShadow: member.active ? "0 2px 8px rgba(36,56,156,0.3)" : "none"
+                  }}>
+                    {member.avatar}
                   </div>
+
+                  {/* Name + Level */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "2px" }}>
+                      <span style={{ fontSize: "13px", fontWeight: "800", color: "var(--text-primary)" }}>{member.name}</span>
+                      {member.isMe && <span style={{ fontSize: "9px", fontWeight: "700", color: "var(--primary-color)", background: "rgba(36,56,156,0.1)", padding: "1px 5px", borderRadius: "4px" }}>나</span>}
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      {/* Level Badge */}
+                      <span style={{
+                        fontSize: "10px", fontWeight: "800",
+                        color: getLevelBadgeColor(member.level),
+                        background: `${getLevelBadgeColor(member.level)}18`,
+                        padding: "1px 7px", borderRadius: "8px",
+                        border: `1px solid ${getLevelBadgeColor(member.level)}44`
+                      }}>Lv.{member.level}</span>
+                      {/* Status dot */}
+                      <span style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "10px", color: member.active ? "var(--secondary-color)" : "var(--text-disabled)" }}>
+                        <span style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: member.active ? "var(--secondary-color)" : "var(--text-disabled)", display: "inline-block" }} />
+                        {member.active ? "공부 중" : "자리 비움"}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Time */}
+                  <span style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-secondary)", flexShrink: 0 }}>{member.hours}</span>
                 </div>
 
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "var(--text-secondary)", marginTop: "4px" }}>
-                  <span>목표 달성도</span>
-                  <span>{member.hours}</span>
-                </div>
-                <div className="progress-bar-track" style={{ height: "6px" }}>
-                  <div
-                    className="progress-bar-fill"
-                    style={{
+                {/* Progress bar */}
+                <div style={{ marginTop: "10px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "10px", color: "var(--text-disabled)", marginBottom: "4px" }}>
+                    <span>목표 달성도</span>
+                    <span style={{ fontWeight: "700" }}>{member.progress}%</span>
+                  </div>
+                  <div style={{ height: "6px", background: "var(--surface-container-high)", borderRadius: "9999px", overflow: "hidden" }}>
+                    <div style={{
+                      height: "100%",
                       width: `${member.progress}%`,
-                      backgroundColor: member.active ? "var(--secondary-color)" : "var(--primary-color)"
-                    }}
-                  />
+                      background: member.active
+                        ? "linear-gradient(90deg, var(--secondary-color), #00BFA5)"
+                        : "linear-gradient(90deg, var(--primary-color), #5C6BC0)",
+                      borderRadius: "9999px",
+                      transition: "width 0.5s ease"
+                    }} />
+                  </div>
                 </div>
               </div>
             ))}

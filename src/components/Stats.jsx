@@ -113,34 +113,63 @@ export const Stats = ({
   return (
     <div className="scrollable">
       {/* Experience Level Banner */}
-      <div className="glass-card" style={{ background: "linear-gradient(135deg, var(--primary-color) 0%, #3f51b5 100%)", color: "#ffffff", padding: "20px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-          <div>
-            <span style={{ fontSize: "11px", opacity: 0.8, fontWeight: "700" }}>현재 학습 등급</span>
-            <h2 style={{ fontSize: "28px", fontWeight: "800", display: "flex", alignItems: "center", gap: "8px" }}>
-              Lv. {level}
-            </h2>
-          </div>
-          <div style={{
-            background: "rgba(255,255,255,0.15)",
-            padding: "8px",
-            borderRadius: "50%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center"
-          }}>
-            <span className="material-symbols-outlined text-[32px]">award</span>
-          </div>
-        </div>
+      {(() => {
+        const getTierInfo = (lv) => {
+          if (lv >= 50) return { label: "전설", emoji: "👑", color: "#FFD700", bg: "linear-gradient(135deg, #8B6914 0%, #C9973A 100%)" };
+          if (lv >= 30) return { label: "다이아", emoji: "💎", color: "#B9F2FF", bg: "linear-gradient(135deg, #1565C0 0%, #42A5F5 100%)" };
+          if (lv >= 20) return { label: "플래티넘", emoji: "🏅", color: "#E0F7FA", bg: "linear-gradient(135deg, #00695C 0%, #26A69A 100%)" };
+          if (lv >= 10) return { label: "골드", emoji: "🥇", color: "#FFF9C4", bg: "linear-gradient(135deg, #F57F17 0%, #FFCA28 100%)" };
+          if (lv >= 5)  return { label: "실버", emoji: "🥈", color: "#F5F5F5", bg: "linear-gradient(135deg, #546E7A 0%, #90A4AE 100%)" };
+          return { label: "브론즈", emoji: "🥉", color: "#FFE0B2", bg: "linear-gradient(135deg, #4E342E 0%, #A1887F 100%)" };
+        };
+        const tier = getTierInfo(level);
+        return (
+          <div className="glass-card" style={{ background: tier.bg, color: "#ffffff", padding: "20px", position: "relative", overflow: "hidden" }}>
+            {/* decorative ring */}
+            <div style={{ position: "absolute", top: "-30px", right: "-30px", width: "120px", height: "120px", borderRadius: "50%", background: "rgba(255,255,255,0.07)", pointerEvents: "none" }} />
+            <div style={{ position: "absolute", top: "20px", right: "10px", width: "80px", height: "80px", borderRadius: "50%", background: "rgba(255,255,255,0.05)", pointerEvents: "none" }} />
 
-        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", opacity: 0.9, marginBottom: "4px" }}>
-          <span>EXP {exp} / {EXP_PER_LEVEL}</span>
-          <span>{expProgressPercent}%</span>
-        </div>
-        <div className="progress-bar-track" style={{ backgroundColor: "rgba(255,255,255,0.2)", height: "10px" }}>
-          <div className="progress-bar-fill" style={{ width: `${expProgressPercent}%`, backgroundColor: "#ffffff" }} />
-        </div>
-      </div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+              <div>
+                <span style={{ fontSize: "11px", opacity: 0.85, fontWeight: "700", letterSpacing: "0.5px", textTransform: "uppercase" }}>현재 학습 등급</span>
+                <h2 style={{ fontSize: "30px", fontWeight: "900", marginTop: "2px", letterSpacing: "-0.5px" }}>
+                  Lv. {level}
+                </h2>
+              </div>
+              <div style={{
+                background: "rgba(255,255,255,0.18)",
+                padding: "12px 16px",
+                borderRadius: "16px",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "2px",
+                backdropFilter: "blur(8px)",
+                border: "1px solid rgba(255,255,255,0.25)"
+              }}>
+                <span style={{ fontSize: "26px", lineHeight: 1 }}>{tier.emoji}</span>
+                <span style={{ fontSize: "10px", fontWeight: "800", letterSpacing: "0.5px", opacity: 0.95 }}>{tier.label}</span>
+              </div>
+            </div>
+
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", opacity: 0.9, marginBottom: "6px" }}>
+              <span>EXP {exp} / {EXP_PER_LEVEL}</span>
+              <span style={{ fontWeight: "800" }}>{expProgressPercent}%</span>
+            </div>
+            <div style={{ backgroundColor: "rgba(255,255,255,0.2)", height: "10px", borderRadius: "9999px", overflow: "hidden" }}>
+              <div style={{
+                height: "100%",
+                width: `${expProgressPercent}%`,
+                backgroundColor: "#ffffff",
+                borderRadius: "9999px",
+                transition: "width 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
+                boxShadow: "0 0 8px rgba(255,255,255,0.6)"
+              }} />
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Overview Cards Grid */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "16px" }}>
