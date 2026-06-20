@@ -99,6 +99,29 @@ export const StudyTimer = ({
     return () => window.removeEventListener("adjust-timer-time", handleAdjust);
   }, [timerMode]);
 
+  // Handle custom AI set duration and auto start event
+  useEffect(() => {
+    const handleSetDuration = (e) => {
+      const { mode, minutes, autoStart } = e.detail;
+      if (mode === "pomodoro") {
+        setPomodoroWorkTime(minutes);
+        setSecondsLeft(minutes * 60);
+      } else if (mode === "timer") {
+        setCustomTimerTime(minutes);
+        setSecondsLeft(minutes * 60);
+      } else if (mode === "stopwatch") {
+        setElapsedSeconds(0);
+      }
+
+      if (autoStart) {
+        setIsActive(true);
+        setIsPaused(false);
+      }
+    };
+    window.addEventListener("set-timer-duration", handleSetDuration);
+    return () => window.removeEventListener("set-timer-duration", handleSetDuration);
+  }, []);
+
   // Handle device orientation for real flipping (Face down detection)
   useEffect(() => {
     const handleOrientation = (event) => {

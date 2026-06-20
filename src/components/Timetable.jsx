@@ -405,6 +405,11 @@ export const Timetable = ({
                                 <span className="material-symbols-outlined" style={{ fontSize: "10px" }}>place</span> {item.location}
                               </span>
                             )}
+                            {item.notes && (
+                              <span style={{ fontSize: "8px", opacity: 0.8, display: "flex", alignItems: "center", gap: "1px" }} title={item.notes}>
+                                <span className="material-symbols-outlined" style={{ fontSize: "10px" }}>edit_note</span> {item.notes}
+                              </span>
+                            )}
                           </div>
                           {!isLocked && (
                             <span
@@ -525,6 +530,7 @@ export const Timetable = ({
                         <div style={{ display: "flex", gap: "12px", fontSize: "11px", color: "var(--text-secondary)", marginTop: "4px" }}>
                           <span style={{ display: "flex", alignItems: "center", gap: "2px" }}><span className="material-symbols-outlined" style={{ fontSize: "12px" }}>schedule</span> {item.startHour}:00 - {item.startHour + item.duration}:00</span>
                           {item.location && <span style={{ display: "flex", alignItems: "center", gap: "2px" }}><span className="material-symbols-outlined" style={{ fontSize: "12px" }}>place</span> {item.location}</span>}
+                          {item.notes && <span style={{ display: "flex", alignItems: "center", gap: "2px", color: "var(--primary-color)", fontWeight: "600" }}><span className="material-symbols-outlined" style={{ fontSize: "12px" }}>edit_note</span> {item.notes}</span>}
                         </div>
                       </div>
                       <button
@@ -745,6 +751,12 @@ export const Timetable = ({
                         <p style={{ fontSize: "11px", color: style.text, opacity: 0.8, marginTop: "2px" }}>
                           {item.startHour}:00 - {item.startHour + item.duration}:00 {item.location && `| ${item.location}`}
                         </p>
+                        {item.notes && (
+                          <div style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "11px", color: style.text, opacity: 0.9, marginTop: "4px", fontWeight: "600" }}>
+                            <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>edit_note</span>
+                            <span>{item.notes}</span>
+                          </div>
+                        )}
                       </div>
                       <div style={{ display: "flex", gap: "6px" }}>
                         <button
